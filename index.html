@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#087f8c">
+  <title>해운대 해양안전 AI</title>
+  <style>
+    :root {
+      --ink: #102a35;
+      --muted: #657782;
+      --line: #dce8eb;
+      --paper: #f4fafb;
+      --white: #fff;
+      --sea: #087f8c;
+      --sea-2: #13a7d8;
+      --navy: #0f172a;
+      --danger: #d92d20;
+      --danger-dark: #991b1b;
+      --amber: #fbbf24;
+      --safe: #0b9b6b;
+      --shadow: 0 14px 40px rgba(16, 42, 53, .10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 80% 0%, rgba(19, 167, 216, .16), transparent 28rem),
+        var(--paper);
+      font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    img { display: block; max-width: 100%; }
+
+    .app {
+      width: min(100%, 980px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 0 16px calc(96px + env(safe-area-inset-bottom));
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 70px;
+      padding: 10px 0;
+      background: rgba(244, 250, 251, .88);
+      backdrop-filter: blur(16px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--sea);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -.04em;
+    }
+    .brand-mark {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 5px rgba(8, 127, 140, .12);
+    }
+    .emergency-link {
+      padding: 9px 13px;
+      color: var(--danger-dark);
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fff1f2;
+      font-size: 13px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .hero {
+      overflow: hidden;
+      position: relative;
+      padding: 28px 24px;
+      color: white;
+      border-radius: 26px;
+      background: linear-gradient(135deg, #087f8c, #13a7d8);
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -46px;
+      bottom: -76px;
+      width: 230px;
+      height: 180px;
+      border: 22px solid rgba(255, 255, 255, .12);
+      border-radius: 50%;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .2em;
+    }
+    .hero h1 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      font-size: clamp(28px, 7vw, 42px);
+      line-height: 1.1;
+      letter-spacing: -.055em;
+    }
+    .hero p:last-child {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 14px 0 0;
+      color: rgba(255,255,255,.9);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .screen { display: none; padding-top: 22px; }
+    .screen.active { display: block; animation: enter .22s ease-out; }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .section-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+    }
+    .section-title h2 { margin: 0; font-size: 21px; letter-spacing: -.04em; }
+    .section-title p { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .card {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--white);
+      box-shadow: 0 8px 28px rgba(16,42,53,.06);
+    }
+    .alert-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+      border-color: #fed7aa;
+      background: linear-gradient(135deg, #fff7ed, #fff);
+    }
+    .alert-icon {
+      display: grid;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      color: #9a3412;
+      border-radius: 15px;
+      background: #ffedd5;
+      font-size: 22px;
+      font-weight: 900;
+    }
+    .alert-card strong { display: block; font-size: 16px; }
+    .alert-card p { margin: 6px 0 0; color: #7c2d12; font-size: 13px; line-height: 1.55; }
+    .risk-method {
+      margin: -2px 0 14px;
+      padding: 12px 14px;
+      color: #52656d;
+      border: 1px dashed #bdd3d8;
+      border-radius: 14px;
+      background: #f7fbfc;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .risk-method strong { color: var(--ink); }
+
+    .map-shell {
+      overflow: hidden;
+      position: relative;
+      height: 390px;
+      border: 1px solid #c7dce1;
+      border-radius: 24px;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,.78), transparent 35%),
+        #ccecf2;
+      box-shadow: var(--shadow);
+    }
+    .map-shell svg { width: 100%; height: 100%; }
+    .map-label {
+      fill: #355c66;
+      font-size: 12px;
+      font-weight: 800;
+      paint-order: stroke;
+      stroke: rgba(255,255,255,.85);
+      stroke-width: 4px;
+    }
+    .map-badge {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 2;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 6px 20px rgba(16,42,53,.13);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .marker {
+      position: absolute;
+      z-index: 4;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      color: white;
+      border: 3px solid white;
+      border-radius: 50% 50% 50% 0;
+      background: var(--danger);
+      box-shadow: 0 4px 14px rgba(153, 27, 27, .34);
+      transform: translate(-50%, -100%) rotate(-45deg);
+    }
+    .marker span {
+      display: block;
+      transform: rotate(45deg);
+      font-size: 9px;
+    }
+    .marker-popup {
+      display: none;
+      position: absolute;
+      z-index: 5;
+      width: min(230px, calc(100% - 24px));
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      line-height: 1.5;
+      transform: translate(-50%, 8px);
+    }
+    .marker-popup.show { display: block; }
+    .marker-popup strong { display: block; margin-bottom: 3px; font-size: 14px; }
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .legend article { padding: 15px; }
+    .legend strong { display: block; font-size: 14px; }
+    .legend span { color: var(--muted); font-size: 12px; }
+    .legend .empty-map {
+      grid-column: 1 / -1;
+      padding: 22px;
+      text-align: center;
+    }
+    .empty-map strong { margin-bottom: 5px; }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .button {
+      min-height: 48px;
+      padding: 12px 15px;
+      border: 1px solid var(--sea);
+      border-radius: 13px;
+      color: var(--sea);
+      background: white;
+      font-weight: 900;
+    }
+    .button.primary { color: white; background: var(--sea); }
+    .button.dark {
+      width: 100%;
+      margin-top: 14px;
+      color: white;
+      border-color: var(--navy);
+      background: var(--navy);
+    }
+    .button:disabled { cursor: not-allowed; opacity: .48; }
+
+    .preview {
+      overflow: hidden;
+      position: relative;
+      display: none;
+      margin-top: 16px;
+      border-radius: 18px;
+      background: #edf3f5;
+    }
+    .preview.show { display: block; }
+    .preview img { width: 100%; max-height: 470px; object-fit: contain; }
+    .preview-badge {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      padding: 7px 10px;
+      color: #422006;
+      border-radius: 999px;
+      background: var(--amber);
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 4px 12px rgba(0,0,0,.16);
+    }
+    .error {
+      display: none;
+      margin: 12px 0 0;
+      padding: 12px 14px;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 13px;
+      background: #fff1f2;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .error.show { display: block; }
+
+    .result { margin-top: 16px; }
+    .empty-result {
+      padding: 18px;
+      border: 2px dashed #fcd34d;
+      border-radius: 18px;
+      background: #fffbeb;
+    }
+    .empty-result b { display: block; margin-bottom: 7px; font-size: 18px; }
+    .empty-result p { margin: 0; color: #713f12; font-size: 13px; line-height: 1.6; }
+    .danger-result {
+      overflow: hidden;
+      color: var(--ink);
+      border: 2px solid #ef4444;
+      border-radius: 24px;
+      background: white;
+      box-shadow: 0 16px 38px rgba(153,27,27,.15);
+    }
+    .danger-head {
+      padding: 20px;
+      color: white;
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+    }
+    .danger-head small { font-weight: 900; letter-spacing: .15em; }
+    .danger-head h3 { margin: 6px 0 12px; font-size: 25px; letter-spacing: -.04em; }
+    .danger-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .meter { height: 8px; margin-top: 8px; border-radius: 99px; background: rgba(255,255,255,.24); }
+    .meter span { display: block; height: 100%; border-radius: inherit; background: white; }
+    .danger-body { padding: 20px; }
+    .danger-body > p { margin: 0 0 16px; color: #475569; line-height: 1.65; }
+    .guidance {
+      margin-bottom: 18px;
+      padding: 14px;
+      border-left: 4px solid #f59e0b;
+      border-radius: 10px;
+      background: #fffbeb;
+      font-weight: 800;
+      line-height: 1.55;
+    }
+    .aid-title { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 17px; }
+    .aid-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .aid-list li {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 10px;
+      align-items: start;
+      line-height: 1.55;
+    }
+    .aid-list b {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      color: white;
+      border-radius: 50%;
+      background: var(--danger);
+      font-size: 12px;
+    }
+    .call-119 {
+      display: block;
+      margin-top: 18px;
+      padding: 14px;
+      color: white;
+      border-radius: 13px;
+      background: var(--danger);
+      text-align: center;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .field { display: grid; gap: 7px; margin-bottom: 14px; }
+    .field label { font-size: 13px; font-weight: 900; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px;
+      color: var(--ink);
+      border: 1px solid #cbdadd;
+      border-radius: 12px;
+      outline: none;
+      background: white;
+    }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--sea);
+      box-shadow: 0 0 0 3px rgba(8,127,140,.12);
+    }
+    .location-picker {
+      height: 320px;
+      margin-bottom: 10px;
+      border: 2px solid #b9d9de;
+      cursor: crosshair;
+      touch-action: manipulation;
+    }
+    .location-picker:focus-visible { outline: 3px solid rgba(8,127,140,.28); outline-offset: 3px; }
+    .picker-badge {
+      position: absolute;
+      z-index: 2;
+      left: 10px;
+      bottom: 10px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.93);
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 5px 18px rgba(16,42,53,.12);
+    }
+    .picker-pin {
+      display: none;
+      position: absolute;
+      z-index: 3;
+      width: 28px;
+      height: 28px;
+      color: white;
+      border: 4px solid white;
+      border-radius: 50% 50% 50% 0;
+      background: var(--danger);
+      box-shadow: 0 5px 16px rgba(153,27,27,.35);
+      transform: translate(-50%, -100%) rotate(-45deg);
+    }
+    .picker-pin.show { display: block; }
+    .picker-help { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .receipt-card { margin-top: 14px; }
+    .receipt-card h3 { margin: 0 0 4px; font-size: 17px; }
+    .receipt-card > p { margin: 0 0 12px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .admin-login { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 10px; }
+    .admin-login input {
+      min-width: 0;
+      min-height: 46px;
+      padding: 11px 12px;
+      border: 1px solid #cbdadd;
+      border-radius: 12px;
+      outline: none;
+    }
+    .admin-login input:focus { border-color: var(--sea); box-shadow: 0 0 0 3px rgba(8,127,140,.12); }
+    .admin-login .button { min-height: 46px; }
+    .receipt-list { display: grid; gap: 9px; }
+    .receipt-list[hidden] { display: none; }
+    .receipt-item { padding: 12px; border-radius: 13px; background: #f4fafb; font-size: 12px; line-height: 1.55; }
+    .receipt-item strong { display: block; color: var(--ink); font-size: 13px; }
+    .receipt-item span { color: #92711f; font-weight: 900; }
+    .report-status { margin: 12px 0 0; color: var(--sea); font-size: 13px; font-weight: 800; }
+    details.settings { margin-top: 18px; color: var(--muted); font-size: 12px; }
+    details.settings summary { cursor: pointer; font-weight: 800; }
+    details.settings input { width: 100%; margin-top: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; }
+
+    .camera-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+      background: #020617;
+    }
+    .camera-modal.show { display: flex; flex-direction: column; }
+    .camera-top { display: flex; align-items: center; justify-content: space-between; color: white; }
+    .camera-top button { padding: 9px 12px; color: white; border: 1px solid #94a3b8; border-radius: 10px; background: transparent; }
+    .camera-stage {
+      overflow: hidden;
+      flex: 1;
+      min-height: 0;
+      margin: 12px 0;
+      border-radius: 18px;
+      background: black;
+    }
+    .camera-stage video { width: 100%; height: 100%; object-fit: contain; }
+    .capture-button {
+      min-height: 58px;
+      color: var(--navy);
+      border: 0;
+      border-radius: 15px;
+      background: white;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      z-index: 50;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      width: min(100%, 980px);
+      padding: 9px max(16px, env(safe-area-inset-left)) calc(9px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-right));
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(18px);
+      transform: translateX(-50%);
+    }
+    .nav-button {
+      display: grid;
+      gap: 3px;
+      place-items: center;
+      min-height: 56px;
+      color: #71818a;
+      border: 0;
+      border-radius: 15px;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .nav-button i { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 50%; font-style: normal; font-size: 16px; }
+    .nav-button.active { color: var(--sea); background: #e7f9fb; }
+    .nav-button.active i { color: white; background: var(--sea); }
+
+    @media (min-width: 720px) {
+      .app { padding-left: 28px; padding-right: 28px; }
+      .hero { padding: 36px; }
+      .map-shell { height: 470px; }
+      .legend { grid-template-columns: repeat(4, 1fr); }
+      .detect-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr); gap: 18px; align-items: start; }
+      .result { margin-top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">◌</span>해운대 해양안전 AI</div>
+      <a class="emergency-link" href="tel:119">긴급 119</a>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">HAEUNDAE MARINE GUARD</p>
+      <h1 id="heroTitle">실시간 출몰 지도</h1>
+      <p id="heroDescription">승인된 위험 생물 출몰 위치와 안전 안내를 확인하세요.</p>
+    </section>
+
+    <main>
+      <section class="screen active" id="screen-map" aria-labelledby="mapTitle">
+        <div class="section-title">
+          <h2 id="mapTitle">해운대 위험 지도</h2>
+          <p>승인된 신고 데이터 · 30초 자동 갱신</p>
+        </div>
+        <article class="card alert-card">
+          <div class="alert-icon">!</div>
+          <div>
+            <strong id="riskTitle">오늘 확인된 출몰 정보가 없습니다</strong>
+            <p id="riskDescription">아직 승인된 오늘 제보가 없습니다. 정보가 없더라도 생물을 발견하면 만지지 마세요.</p>
+          </div>
+        </article>
+        <div class="risk-method">
+          <strong>오늘의 위험 정보는 어떻게 바뀌나요?</strong>
+          승인된 제보의 발견 시각·생물 위험도·건수를 기준으로 자동 계산합니다. 서버에서 30초마다 새 정보를 확인하며, 검수 대기 제보는 지도에 표시하지 않습니다.
+        </div>
+
+        <div class="map-shell" id="map">
+          <span class="map-badge" id="mapBadge">승인된 실시간 출몰 0건</span>
+          <svg viewBox="0 0 900 520" role="img" aria-label="해운대 해수욕장과 동백섬을 나타낸 간략 지도">
+            <defs>
+              <pattern id="waves" width="34" height="18" patternUnits="userSpaceOnUse">
+                <path d="M0 12 Q8 4 17 12 T34 12" fill="none" stroke="#8cd2df" stroke-width="2" opacity=".65"/>
+              </pattern>
+              <linearGradient id="land" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#dcecc7"/>
+                <stop offset="1" stop-color="#b9d79c"/>
+              </linearGradient>
+            </defs>
+            <rect width="900" height="520" fill="url(#waves)"/>
+            <path d="M-20 15 H920 V155 C815 153 741 171 654 205 C548 246 480 250 391 217 C299 184 254 181 186 217 C109 258 53 261 -20 241Z" fill="url(#land)"/>
+            <path d="M-20 241 C53 261 109 258 186 217 C254 181 299 184 391 217 C480 250 548 246 654 205 C741 171 815 153 920 155" fill="none" stroke="#f1d598" stroke-width="34"/>
+            <path d="M-20 222 C55 240 111 237 181 202 C254 166 304 168 398 202 C484 233 544 228 646 190 C742 154 820 135 920 137" fill="none" stroke="#fff2cd" stroke-width="8"/>
+            <path d="M35 84 C93 49 151 50 196 90 C167 117 159 154 174 194 C112 225 59 227 1 211Z" fill="#79a96a"/>
+            <circle cx="87" cy="122" r="34" fill="#65995b" opacity=".8"/>
+            <path d="M573 63 L650 104 L604 145 L526 107Z" fill="#d3dfc3" stroke="#a9c397" stroke-width="3"/>
+            <path d="M310 65 H480 M338 102 H530 M701 80 H858" stroke="#a5b9a7" stroke-width="9" stroke-linecap="round" opacity=".7"/>
+            <text class="map-label" x="42" y="62">동백섬</text>
+            <text class="map-label" x="325" y="169">해운대 해수욕장</text>
+            <text class="map-label" x="714" y="120">미포</text>
+            <text class="map-label" x="579" y="96">해운대역</text>
+            <text class="map-label" x="692" y="375">바다</text>
+          </svg>
+          <div id="markers"></div>
+        </div>
+
+        <div class="legend" id="markerLegend"></div>
+      </section>
+
+      <section class="screen" id="screen-detect" aria-labelledby="detectTitle">
+        <div class="section-title">
+          <h2 id="detectTitle">AI 생물 인식</h2>
+          <p>AI 추정 결과 · 의료적 진단 아님</p>
+        </div>
+        <div class="detect-layout">
+          <article class="card">
+            <input id="photoInput" type="file" accept="image/jpeg,image/png" hidden>
+            <div class="action-row">
+              <button class="button primary" id="cameraButton" type="button">카메라 촬영</button>
+              <button class="button" id="uploadButton" type="button">사진 업로드</button>
+            </div>
+            <div class="preview" id="preview">
+              <img id="previewImage" alt="선택한 사진">
+              <span class="preview-badge">AI 분석용 사진 · 종명은 추정값</span>
+            </div>
+            <button class="button dark" id="analyzeButton" type="button" disabled>분석 시작</button>
+            <p class="error" id="detectError" role="alert"></p>
+          </article>
+          <div class="result" id="result" aria-live="polite">
+            <div class="empty-result">
+              <b>사진을 촬영하거나 올려주세요</b>
+              <p>생물 전체가 보이도록 안전한 거리에서 촬영하면 분석에 도움이 됩니다.</p>
+            </div>
+          </div>
+        </div>
+        <details class="settings">
+          <summary>API 서버 설정 (지도·분석·제보 공통)</summary>
+          <input id="apiUrl" aria-label="분석 서버 주소" value="http://127.0.0.1:8000">
+        </details>
+      </section>
+
+      <section class="screen" id="screen-report" aria-labelledby="reportTitle">
+        <div class="section-title">
+          <h2 id="reportTitle">위험 생물 제보</h2>
+          <p>제보 사진은 검수 전 학습에 사용하지 않음</p>
+        </div>
+        <form class="card" id="reportForm">
+          <div class="field">
+            <label>지도에서 발견 위치 지정</label>
+            <div class="map-shell location-picker" id="reportMap" role="button" tabindex="0" aria-label="지도를 눌러 발견 위치 지정">
+              <svg viewBox="0 0 900 520" role="img" aria-label="해운대 해수욕장과 동백섬을 나타낸 위치 선택 지도">
+                <defs>
+                  <pattern id="reportWaves" width="34" height="18" patternUnits="userSpaceOnUse">
+                    <path d="M0 12 Q8 4 17 12 T34 12" fill="none" stroke="#8cd2df" stroke-width="2" opacity=".65"/>
+                  </pattern>
+                  <linearGradient id="reportLand" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0" stop-color="#dcecc7"/>
+                    <stop offset="1" stop-color="#b9d79c"/>
+                  </linearGradient>
+                </defs>
+                <rect width="900" height="520" fill="url(#reportWaves)"/>
+                <path d="M-20 15 H920 V155 C815 153 741 171 654 205 C548 246 480 250 391 217 C299 184 254 181 186 217 C109 258 53 261 -20 241Z" fill="url(#reportLand)"/>
+                <path d="M-20 241 C53 261 109 258 186 217 C254 181 299 184 391 217 C480 250 548 246 654 205 C741 171 815 153 920 155" fill="none" stroke="#f1d598" stroke-width="34"/>
+                <path d="M-20 222 C55 240 111 237 181 202 C254 166 304 168 398 202 C484 233 544 228 646 190 C742 154 820 135 920 137" fill="none" stroke="#fff2cd" stroke-width="8"/>
+                <path d="M35 84 C93 49 151 50 196 90 C167 117 159 154 174 194 C112 225 59 227 1 211Z" fill="#79a96a"/>
+                <circle cx="87" cy="122" r="34" fill="#65995b" opacity=".8"/>
+                <path d="M573 63 L650 104 L604 145 L526 107Z" fill="#d3dfc3" stroke="#a9c397" stroke-width="3"/>
+                <path d="M310 65 H480 M338 102 H530 M701 80 H858" stroke="#a5b9a7" stroke-width="9" stroke-linecap="round" opacity=".7"/>
+                <text class="map-label" x="42" y="62">동백섬</text>
+                <text class="map-label" x="325" y="169">해운대 해수욕장</text>
+                <text class="map-label" x="714" y="120">미포</text>
+                <text class="map-label" x="579" y="96">해운대역</text>
+                <text class="map-label" x="692" y="375">바다</text>
+              </svg>
+              <span class="picker-badge" id="coordinateLabel">지도를 눌러 위치를 선택하세요</span>
+              <span class="picker-pin" id="reportPin" aria-hidden="true"></span>
+            </div>
+            <p class="picker-help">발견한 지점을 지도에서 한 번 눌러주세요. 휴대폰에서도 손가락으로 지정할 수 있습니다.</p>
+            <input id="reportLatitude" name="latitude" type="hidden">
+            <input id="reportLongitude" name="longitude" type="hidden">
+          </div>
+          <div class="field">
+            <label for="reportLocation">위치 설명</label>
+            <input id="reportLocation" name="location" placeholder="예: 해운대 7번 망루 앞" required>
+          </div>
+          <div class="field">
+            <label for="reportDate">발견 날짜와 시간</label>
+            <input id="reportDate" name="discovered_at" type="datetime-local" required>
+          </div>
+          <div class="field">
+            <label for="reportSpecies">생물 종류</label>
+            <select id="reportSpecies" name="species_type" required>
+              <option value="">선택해 주세요</option>
+              <option>노무라입깃해파리</option>
+              <option>작은노랑굴파리</option>
+              <option>파랑고리문어</option>
+              <option>쏠종개</option>
+              <option>갯바위 쏠배감펭</option>
+              <option>모르겠음</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reportPhoto">사진</label>
+            <input id="reportPhoto" name="file" type="file" accept="image/jpeg,image/png" required>
+          </div>
+          <div class="field">
+            <label for="reportContent">제보 내용</label>
+            <textarea id="reportContent" name="content" placeholder="생물의 크기, 움직임, 주변 상황을 적어주세요."></textarea>
+          </div>
+          <button class="button primary" id="reportButton" type="submit">제보 보내기</button>
+          <p class="report-status" id="reportStatus" aria-live="polite"></p>
+        </form>
+        <article class="card receipt-card">
+          <h3>관리자 제보 접수 내역</h3>
+          <p>관리자 비밀번호는 서버에서 확인합니다. 인증 전에는 접수된 제보 내용을 불러오지 않습니다.</p>
+          <div class="admin-login">
+            <input id="adminPassword" type="password" inputmode="numeric" autocomplete="current-password" aria-label="관리자 비밀번호" placeholder="관리자 비밀번호">
+            <button class="button" id="adminLoginButton" type="button">확인</button>
+          </div>
+          <p class="report-status" id="adminStatus" aria-live="polite"></p>
+          <div class="receipt-list" id="adminReports" hidden></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav" aria-label="주요 화면">
+    <button class="nav-button active" data-screen="map" type="button"><i>⌖</i>지도</button>
+    <button class="nav-button" data-screen="detect" type="button"><i>◎</i>AI 인식</button>
+    <button class="nav-button" data-screen="report" type="button"><i>＋</i>제보</button>
+  </nav>
+
+  <div class="camera-modal" id="cameraModal" role="dialog" aria-modal="true" aria-label="카메라 촬영 화면">
+    <div class="camera-top">
+      <div><b>해양 생물 촬영</b><br><small>안전한 거리를 유지하세요.</small></div>
+      <button id="closeCamera" type="button">닫기</button>
+    </div>
+    <div class="camera-stage"><video id="cameraVideo" autoplay muted playsinline></video></div>
+    <button class="capture-button" id="captureButton" type="button">● 사진 찍기</button>
+  </div>
+
+  <script>
+    "use strict";
+
+    const SPECIES = {
+      jellyfish_01: {
+        name: "노무라입깃해파리",
+        dangerLevel: "위험",
+        description: "수온 상승으로 남해·동해안에 출현하는 대형 독성 해파리입니다.",
+        guidance: "물 밖으로 이동하고 주변 사람과 안전요원에게 알리세요.",
+        firstAid: [
+          "환자를 물 밖의 안전한 장소로 이동시킵니다.",
+          "환부를 문지르거나 맨손으로 촉수를 만지지 않습니다.",
+          "남은 촉수는 장갑이나 도구를 사용해 조심히 제거합니다.",
+          "호흡곤란·의식저하·심한 통증이 있으면 즉시 119에 신고합니다."
+        ]
+      },
+      box_jellyfish: {
+        name: "작은노랑굴파리",
+        dangerLevel: "매우 위험",
+        description: "크기는 작지만 접촉하면 불에 덴 듯한 강한 통증을 일으킬 수 있습니다.",
+        guidance: "접촉하지 말고 즉시 물 밖으로 이동해 안전요원을 부르세요.",
+        firstAid: [
+          "즉시 물 밖으로 나와 안전요원에게 알립니다.",
+          "환부를 문지르거나 모래로 긁지 않습니다.",
+          "촉수가 보이면 보호 도구를 사용해 제거합니다.",
+          "전신 증상이나 호흡 이상이 있으면 119에 신고합니다."
+        ]
+      },
+      blue_ring_octopus: {
+        name: "파랑고리문어",
+        dangerLevel: "극위험",
+        description: "테트로도톡신을 지녀 마비와 호흡곤란을 일으킬 수 있는 극위험 생물입니다.",
+        guidance: "절대 만지지 말고 주변 접근을 막은 뒤 안전요원에게 신고하세요.",
+        firstAid: [
+          "즉시 119와 현장 안전요원에게 연락합니다.",
+          "환자를 움직이지 않게 하고 편안히 눕힙니다.",
+          "호흡을 계속 확인하고 호흡이 없으면 심폐소생술을 준비합니다.",
+          "상처를 빨거나 임의로 절개하지 않습니다."
+        ]
+      },
+      sting_fish: {
+        name: "쏠종개",
+        dangerLevel: "위험",
+        description: "지느러미 가시에 독침이 있어 찔리면 극심한 통증과 부종이 생길 수 있습니다.",
+        guidance: "맨발로 접근하지 말고 바위틈의 생물을 손으로 잡지 마세요.",
+        firstAid: [
+          "안전한 장소로 이동하고 환부를 움직이지 않습니다.",
+          "깊게 박힌 가시는 억지로 빼지 않습니다.",
+          "화상에 주의하며 따뜻한 물에 환부를 담급니다.",
+          "통증이 심하거나 알레르기 증상이 있으면 119에 연락합니다."
+        ]
+      },
+      lionfish: {
+        name: "갯바위 쏠배감펭",
+        dangerLevel: "위험",
+        description: "등지느러미 독가시에 찔리면 심한 통증과 부종을 유발할 수 있습니다.",
+        guidance: "갯바위와 방파제에서 맨손으로 생물을 만지지 마세요.",
+        firstAid: [
+          "상처를 깨끗한 물로 씻고 환부를 안정시킵니다.",
+          "깊게 박힌 가시는 무리하게 제거하지 않습니다.",
+          "화상에 주의하며 따뜻한 물에 환부를 담급니다.",
+          "전신 증상이나 심한 통증이 있으면 119에 연락합니다."
+        ]
+      }
+    };
+
+    let MARKERS = [];
+    const MAP_BOUNDS = { minLat: 35.151, maxLat: 35.169, minLng: 129.143, maxLng: 129.174 };
+
+    const titles = {
+      map: ["실시간 출몰 지도", "승인된 위험 생물 출몰 위치와 안전 안내를 확인하세요."],
+      detect: ["위험 생물 AI 인식", "사진을 촬영하거나 올리면 위험 생물과 응급처치 순서를 안내합니다."],
+      report: ["위험 생물 출몰 제보", "발견 위치와 사진을 보내면 검수 후 안전 정보에 반영할 수 있습니다."]
+    };
+
+    let selectedFile = null;
+    let previewUrl = "";
+    let stream = null;
+    let selectionVersion = 0;
+    let analysisController = null;
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+    const apiBase = () => $("#apiUrl").value.trim().replace(/\/+$/, "");
+
+    function showScreen(name) {
+      $$(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === `screen-${name}`));
+      $$(".nav-button").forEach((button) => button.classList.toggle("active", button.dataset.screen === name));
+      $("#heroTitle").textContent = titles[name][0];
+      $("#heroDescription").textContent = titles[name][1];
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    $$(".nav-button").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.screen)));
+
+    function speciesIdFromName(name) {
+      return Object.keys(SPECIES).find((id) => SPECIES[id].name === name) || "";
+    }
+
+    function formatSightingTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "시간 미상";
+      const today = new Date();
+      const sameDay = date.getFullYear() === today.getFullYear()
+        && date.getMonth() === today.getMonth()
+        && date.getDate() === today.getDate();
+      return `${sameDay ? "오늘 " : `${date.getMonth() + 1}/${date.getDate()} `}${date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+    }
+
+    function updateRiskSummary() {
+      const today = new Date();
+      const todays = MARKERS.filter((item) => {
+        const date = new Date(item.discoveredAt);
+        return !Number.isNaN(date.getTime())
+          && date.getFullYear() === today.getFullYear()
+          && date.getMonth() === today.getMonth()
+          && date.getDate() === today.getDate();
+      });
+      const title = $("#riskTitle");
+      const description = $("#riskDescription");
+      $("#mapBadge").textContent = `승인된 실시간 출몰 ${MARKERS.length}건`;
+      if (!todays.length) {
+        title.textContent = "오늘 확인된 출몰 정보가 없습니다";
+        description.textContent = "아직 승인된 오늘 제보가 없습니다. 정보가 없더라도 생물을 발견하면 만지지 마세요.";
+        return;
+      }
+      const hasExtreme = todays.some((item) => SPECIES[item.speciesId]?.dangerLevel === "극위험" || SPECIES[item.speciesId]?.dangerLevel === "매우 위험");
+      const level = hasExtreme || todays.length >= 3 ? "위험" : "주의";
+      title.textContent = `오늘 ${todays.length}건 확인 · ${level} 단계`;
+      description.textContent = `${[...new Set(todays.map((item) => SPECIES[item.speciesId]?.name).filter(Boolean))].join(", ")} 출몰 제보가 승인되었습니다. 마커를 눌러 위치를 확인하세요.`;
+    }
+
+    function renderMarkers() {
+      const host = $("#markers");
+      const legend = $("#markerLegend");
+      host.innerHTML = "";
+      legend.innerHTML = "";
+      if (!MARKERS.length) {
+        legend.innerHTML = `<article class="card empty-map"><strong>현재 표시할 출몰 위치가 없습니다</strong><span>승인된 제보가 등록되면 지도에 자동으로 나타납니다.</span></article>`;
+        updateRiskSummary();
+        return;
+      }
+      MARKERS.forEach((item, index) => {
+        const species = SPECIES[item.speciesId];
+        if (!species) return;
+        const left = ((item.lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng)) * 100;
+        const top = (1 - (item.lat - MAP_BOUNDS.minLat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat)) * 100;
+        const marker = document.createElement("button");
+        marker.className = "marker";
+        marker.style.left = `${Math.min(96, Math.max(4, left))}%`;
+        marker.style.top = `${Math.min(93, Math.max(12, top))}%`;
+        marker.setAttribute("aria-label", `${species.name}, ${item.location}`);
+        marker.innerHTML = "<span>!</span>";
+        const popup = document.createElement("div");
+        popup.className = "marker-popup";
+        popup.style.left = `${Math.min(80, Math.max(20, left))}%`;
+        popup.style.top = `${Math.min(78, Math.max(14, top))}%`;
+        popup.innerHTML = `<strong>${species.name}</strong>${item.location}<br>${formatSightingTime(item.discoveredAt)} · ${species.dangerLevel}`;
+        marker.addEventListener("click", () => {
+          $$(".marker-popup").forEach((other) => other.classList.remove("show"));
+          popup.classList.add("show");
+        });
+        host.append(marker, popup);
+
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `<strong>${species.name}</strong><span>${item.location} · ${formatSightingTime(item.discoveredAt)}</span>`;
+        legend.append(card);
+      });
+      updateRiskSummary();
+    }
+    renderMarkers();
+
+    async function loadApprovedSightings() {
+      try {
+        const response = await fetch(`${apiBase()}/reports/approved`, { cache: "no-store" });
+        if (!response.ok) throw new Error("출몰 정보를 불러오지 못했습니다.");
+        const rows = await response.json();
+        MARKERS = rows.map((item) => ({
+          ...item,
+          speciesId: item.speciesId || speciesIdFromName(item.speciesType),
+          lat: Number(item.latitude ?? item.lat),
+          lng: Number(item.longitude ?? item.lng)
+        })).filter((item) => item.speciesId && Number.isFinite(item.lat) && Number.isFinite(item.lng));
+        renderMarkers();
+      } catch {
+        MARKERS = [];
+        renderMarkers();
+        $("#mapBadge").textContent = "실시간 서버 연결 대기";
+      }
+    }
+    loadApprovedSightings();
+    window.setInterval(loadApprovedSightings, 30000);
+
+    function showDetectError(message) {
+      const node = $("#detectError");
+      node.textContent = message || "";
+      node.classList.toggle("show", Boolean(message));
+    }
+
+    function chooseFile(file) {
+      showDetectError("");
+      $("#result").innerHTML = "";
+      if (!file) return;
+      if (!["image/jpeg", "image/png"].includes(file.type)) {
+        showDetectError("JPG, JPEG, PNG 파일만 올릴 수 있습니다.");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        showDetectError("이미지 크기는 10MB 이하여야 합니다.");
+        return;
+      }
+      analysisController?.abort();
+      analysisController = null;
+      selectionVersion += 1;
+      selectedFile = file;
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(file);
+      $("#previewImage").src = previewUrl;
+      $("#preview").classList.add("show");
+      $("#analyzeButton").disabled = false;
+      $("#analyzeButton").textContent = "분석 시작";
+      $("#result").innerHTML = `<div class="empty-result"><b>사진이 선택되었습니다</b><p>분석 시작을 누르면 마지막으로 선택한 사진을 분석합니다.</p></div>`;
+    }
+
+    $("#uploadButton").addEventListener("click", () => $("#photoInput").click());
+    $("#photoInput").addEventListener("change", (event) => {
+      const file = event.currentTarget.files?.[0];
+      event.currentTarget.value = "";
+      chooseFile(file);
+    });
+
+    function stopCamera() {
+      stream?.getTracks().forEach((track) => track.stop());
+      stream = null;
+      $("#cameraVideo").srcObject = null;
+      $("#cameraModal").classList.remove("show");
+      document.body.style.overflow = "";
+    }
+
+    $("#cameraButton").addEventListener("click", async () => {
+      showDetectError("");
+      if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+        showDetectError("이 환경에서는 카메라를 열 수 없습니다. 사진 업로드를 이용해 주세요.");
+        return;
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false
+        });
+        $("#cameraVideo").srcObject = stream;
+        $("#cameraModal").classList.add("show");
+        document.body.style.overflow = "hidden";
+        await $("#cameraVideo").play();
+      } catch (error) {
+        showDetectError(error?.name === "NotAllowedError"
+          ? "카메라 권한이 거부되었습니다. 브라우저 설정에서 권한을 허용하거나 사진 업로드를 이용해 주세요."
+          : "카메라를 시작하지 못했습니다. 사진 업로드를 이용해 주세요.");
+      }
+    });
+
+    $("#closeCamera").addEventListener("click", stopCamera);
+    $("#captureButton").addEventListener("click", () => {
+      const video = $("#cameraVideo");
+      if (!video.videoWidth || !video.videoHeight) return;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) chooseFile(new File([blob], "camera-photo.jpg", { type: "image/jpeg" }));
+        stopCamera();
+      }, "image/jpeg", .92);
+    });
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[character]);
+    }
+
+    function renderResult(data) {
+      const detections = Array.isArray(data?.detections) ? data.detections : [];
+      if (!detections.length) {
+        $("#result").innerHTML = `
+          <div class="empty-result">
+            <b>탐지된 대상이 없습니다</b>
+            <p>사진만으로 안전을 확정할 수 없습니다. 생물을 만지지 말고 현장 안전요원에게 문의하세요.</p>
+          </div>`;
+        return;
+      }
+      const sorted = [...detections].sort((a, b) => Number(b.confidence) - Number(a.confidence));
+      const detection = sorted[0];
+      const confidence = Number(detection.confidence || 0);
+      const isHazard = detection.classificationStatus === "candidate" || confidence >= .75;
+      if (!isHazard) {
+        $("#result").innerHTML = `
+          <div class="empty-result">
+            <b>위험 생물로 확정하지 않았습니다</b>
+            <p>최고 모델 일치도 ${Math.round(confidence * 100)}%입니다. 생물을 만지지 말고 안전요원에게 문의하세요.</p>
+          </div>`;
+        return;
+      }
+      const registered = SPECIES[detection.speciesId] || {};
+      const name = detection.speciesName || registered.name || "위험 생물";
+      const danger = detection.dangerLevel || registered.dangerLevel || "위험";
+      const description = detection.description || registered.description || "";
+      const guidance = detection.guidance || registered.guidance || "생물을 만지지 말고 안전요원에게 알리세요.";
+      const firstAid = Array.isArray(detection.firstAid) && detection.firstAid.length
+        ? detection.firstAid
+        : (registered.firstAid || ["즉시 현장 안전요원 또는 119에 연락합니다."]);
+      $("#result").innerHTML = `
+        <article class="danger-result">
+          <div class="danger-head">
+            <small>위험 생물 감지 · AI 추정 결과</small>
+            <h3>${escapeHtml(name)}</h3>
+            <div class="danger-meta"><span>${escapeHtml(danger)}</span><span>모델 일치도 ${Math.round(confidence * 100)}%</span></div>
+            <div class="meter"><span style="width:${Math.min(100, Math.round(confidence * 100))}%"></span></div>
+          </div>
+          <div class="danger-body">
+            <p>${escapeHtml(description)}</p>
+            <div class="guidance">지금 행동: ${escapeHtml(guidance)}</div>
+            <h4 class="aid-title">✚ 즉시 응급처치</h4>
+            <ol class="aid-list">${firstAid.map((step, index) => `<li><b>${index + 1}</b><span>${escapeHtml(step)}</span></li>`).join("")}</ol>
+            <a class="call-119" href="tel:119">응급 증상 시 119 전화</a>
+          </div>
+        </article>`;
+    }
+
+    $("#analyzeButton").addEventListener("click", async () => {
+      if (!selectedFile) return;
+      analysisController?.abort();
+      const controller = new AbortController();
+      analysisController = controller;
+      const version = selectionVersion;
+      const file = selectedFile;
+      const button = $("#analyzeButton");
+      showDetectError("");
+      button.disabled = true;
+      button.textContent = "AI 분석 중…";
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        const response = await fetch(`${apiBase()}/detect`, { method: "POST", body: form, signal: controller.signal });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.detail || "분석 서버에 연결하지 못했습니다.");
+        if (version === selectionVersion) renderResult(body);
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          showDetectError(error?.message || "분석 중 오류가 발생했습니다.");
+        }
+      } finally {
+        if (analysisController === controller) {
+          analysisController = null;
+          button.disabled = !selectedFile;
+          button.textContent = "분석 시작";
+        }
+      }
+    });
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    $("#reportDate").value = now.toISOString().slice(0, 16);
+
+    function setReportLocation(clientX, clientY) {
+      const map = $("#reportMap");
+      const rect = map.getBoundingClientRect();
+      const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      const y = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
+      const latitude = MAP_BOUNDS.maxLat - y * (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat);
+      const longitude = MAP_BOUNDS.minLng + x * (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng);
+      $("#reportLatitude").value = latitude.toFixed(6);
+      $("#reportLongitude").value = longitude.toFixed(6);
+      const pin = $("#reportPin");
+      pin.style.left = `${x * 100}%`;
+      pin.style.top = `${y * 100}%`;
+      pin.classList.add("show");
+      $("#coordinateLabel").textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)} 선택됨`;
+      const location = $("#reportLocation");
+      if (!location.value || location.dataset.auto === "true") {
+        location.value = x < .26 ? "동백섬 인근" : x > .74 ? "미포 인근" : "해운대 해수욕장 인근";
+        location.dataset.auto = "true";
+      }
+    }
+
+    $("#reportMap").addEventListener("click", (event) => setReportLocation(event.clientX, event.clientY));
+    $("#reportMap").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        const rect = event.currentTarget.getBoundingClientRect();
+        setReportLocation(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
+    });
+    $("#reportLocation").addEventListener("input", (event) => { event.currentTarget.dataset.auto = "false"; });
+
+    async function loadAdminReports() {
+      const password = $("#adminPassword").value;
+      const status = $("#adminStatus");
+      const host = $("#adminReports");
+      if (!password) {
+        status.textContent = "관리자 비밀번호를 입력해 주세요.";
+        host.hidden = true;
+        return;
+      }
+      $("#adminLoginButton").disabled = true;
+      status.textContent = "관리자 인증 중…";
+      host.hidden = true;
+      try {
+        const response = await fetch(`${apiBase()}/reports/admin`, {
+          cache: "no-store",
+          headers: { "X-Admin-Password": password }
+        });
+        const body = await response.json().catch(() => ([]));
+        if (!response.ok) throw new Error(body.detail || "관리자 인증에 실패했습니다.");
+        host.innerHTML = body.length
+          ? body.map((item) => `<div class="receipt-item"><strong>${item.speciesType} · ${item.location}</strong><span>${item.approved ? "지도 반영 완료" : "검수 대기"}</span><br>접수번호 ${item.id}<br>${new Date(item.discoveredAt).toLocaleString("ko-KR")}<br>${item.content || "추가 내용 없음"}<br>좌표 ${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}</div>`).join("")
+          : `<div class="receipt-item"><strong>접수된 제보가 없습니다</strong>새 제보가 들어오면 이곳에 표시됩니다.</div>`;
+        host.hidden = false;
+        status.textContent = `관리자 인증 완료 · 총 ${body.length}건`;
+      } catch (error) {
+        status.textContent = error?.message || "제보 내역을 불러오지 못했습니다.";
+      } finally {
+        $("#adminLoginButton").disabled = false;
+      }
+    }
+    $("#adminLoginButton").addEventListener("click", loadAdminReports);
+    $("#adminPassword").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") loadAdminReports();
+    });
+
+    $("#reportForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const photo = $("#reportPhoto").files?.[0];
+      const status = $("#reportStatus");
+      const button = $("#reportButton");
+      if (!$("#reportLatitude").value || !$("#reportLongitude").value) {
+        status.textContent = "먼저 지도에서 발견 위치를 지정해 주세요.";
+        return;
+      }
+      if (!photo || !["image/jpeg", "image/png"].includes(photo.type) || photo.size > 10 * 1024 * 1024) {
+        status.textContent = "10MB 이하의 JPG 또는 PNG 사진을 선택해 주세요.";
+        return;
+      }
+      button.disabled = true;
+      status.textContent = "제보를 보내는 중…";
+      try {
+        const response = await fetch(`${apiBase()}/reports`, { method: "POST", body: new FormData(form) });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.detail || "제보를 전송하지 못했습니다.");
+        status.textContent = `${body.message || "제보가 접수되었습니다."} 접수번호: ${body.id || "확인 중"}`;
+        form.reset();
+        $("#reportDate").value = now.toISOString().slice(0, 16);
+        $("#reportPin").classList.remove("show");
+        $("#coordinateLabel").textContent = "지도를 눌러 위치를 선택하세요";
+        $("#adminReports").hidden = true;
+        $("#adminStatus").textContent = "새 제보가 접수되었습니다. 관리자는 비밀번호를 다시 입력해 확인하세요.";
+        loadApprovedSightings();
+      } catch (error) {
+        status.textContent = error?.message || "제보 중 오류가 발생했습니다.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      analysisController?.abort();
+      stopCamera();
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    });
+  </script>
+</body>
+</html>
