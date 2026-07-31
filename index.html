@@ -1155,9 +1155,19 @@
           headers: { "X-Admin-Password": password }
         });
         const body = await response.json().catch(() => ([]));
+        if (response.status === 404) {
+          throw new Error("관리자 API가 없는 이전 서버입니다. FastAPI 서버를 다시 실행해 주세요.");
+        }
         if (!response.ok) throw new Error(body.detail || "관리자 인증에 실패했습니다.");
         host.innerHTML = body.length
-          ? body.map((item) => `<div class="receipt-item"><strong>${item.speciesType} · ${item.location}</strong><span>${item.approved ? "지도 반영 완료" : "검수 대기"}</span><br>접수번호 ${item.id}<br>${new Date(item.discoveredAt).toLocaleString("ko-KR")}<br>${item.content || "추가 내용 없음"}<br>좌표 ${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}</div>`).join("")
+          ? body.map((item) => {
+            const latitude = Number(item.latitude);
+            const longitude = Number(item.longitude);
+            const coordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
+              ? `좌표 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`
+              : "좌표 정보 없음";
+            return `<div class="receipt-item"><strong>${item.speciesType} · ${item.location}</strong><span>${item.approved ? "지도 반영 완료" : "검수 대기"}</span><br>접수번호 ${item.id}<br>${new Date(item.discoveredAt).toLocaleString("ko-KR")}<br>${item.content || "추가 내용 없음"}<br>${coordinates}</div>`;
+          }).join("")
           : `<div class="receipt-item"><strong>접수된 제보가 없습니다</strong>새 제보가 들어오면 이곳에 표시됩니다.</div>`;
         host.hidden = false;
         status.textContent = `관리자 인증 완료 · 총 ${body.length}건`;
