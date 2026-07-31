@@ -471,6 +471,37 @@
     .receipt-item { padding: 12px; border-radius: 13px; background: #f4fafb; font-size: 12px; line-height: 1.55; }
     .receipt-item strong { display: block; color: var(--ink); font-size: 13px; }
     .receipt-item span { color: #92711f; font-weight: 900; }
+    .receipt-grid { display: grid; grid-template-columns: 78px 1fr; gap: 11px; align-items: start; }
+    .receipt-photo {
+      width: 78px;
+      height: 78px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #dce8eb;
+    }
+    .receipt-coordinate {
+      display: inline-flex;
+      margin-top: 5px;
+      padding: 4px 7px;
+      color: var(--navy);
+      border: 1px solid #b8dfe4;
+      border-radius: 999px;
+      background: #eaf9fb;
+      font-weight: 900;
+    }
+    .review-actions { display: flex; gap: 7px; margin-top: 10px; }
+    .review-actions button {
+      min-height: 38px;
+      padding: 8px 13px;
+      border: 0;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .review-approve { color: white; background: var(--safe); }
+    .review-reject { color: #991b1b; background: #fee2e2; }
+    .review-actions button:disabled { opacity: .45; cursor: not-allowed; }
     .report-status { margin: 12px 0 0; color: var(--sea); font-size: 13px; font-weight: 800; }
     details.settings { margin-top: 18px; color: var(--muted); font-size: 12px; }
     details.settings summary { cursor: pointer; font-weight: 800; }
@@ -637,7 +668,7 @@
         </div>
         <details class="settings">
           <summary>API 서버 설정 (지도·분석·제보 공통)</summary>
-          <input id="apiUrl" aria-label="분석 서버 주소" value="http://127.0.0.1:8000">
+          <input id="apiUrl" aria-label="분석 서버 주소" value="https://haeundae-marine-safety-api-ohen189.onrender.com">
         </details>
       </section>
 
@@ -825,6 +856,9 @@
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => [...document.querySelectorAll(selector)];
     const apiBase = () => $("#apiUrl").value.trim().replace(/\/+$/, "");
+    const apiConnectionMessage = () => location.protocol === "https:"
+      ? "무료 공개 서버가 아직 연결되지 않았거나 잠시 깨어나는 중입니다. 1분 뒤 다시 시도해 주세요."
+      : "분석 서버에 연결할 수 없습니다. FastAPI 서버가 실행 중인지 확인해 주세요.";
 
     function showScreen(name) {
       $$(".screen").forEach((screen) => screen.classList.toggle("active", screen.id === `screen-${name}`));
@@ -929,7 +963,7 @@
       } catch {
         MARKERS = [];
         renderMarkers();
-        $("#mapBadge").textContent = "실시간 서버 연결 대기";
+        $("#mapBadge").textContent = "무료 서버 연결 대기";
       }
     }
     loadApprovedSightings();
@@ -1091,7 +1125,7 @@
         if (version === selectionVersion) renderResult(body);
       } catch (error) {
         if (error?.name !== "AbortError") {
-          showDetectError(error?.message || "분석 중 오류가 발생했습니다.");
+          showDetectError(error instanceof TypeError ? apiConnectionMessage() : (error?.message || "분석 중 오류가 발생했습니다."));
         }
       } finally {
         if (analysisController === controller) {
@@ -1161,18 +1195,39 @@
         if (!response.ok) throw new Error(body.detail || "관리자 인증에 실패했습니다.");
         host.innerHTML = body.length
           ? body.map((item) => {
-            const latitude = Number(item.latitude);
-            const longitude = Number(item.longitude);
-            const coordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
-              ? `좌표 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`
+            const hasCoordinates = item.latitude !== null && item.latitude !== undefined
+              && item.longitude !== null && item.longitude !== undefined
+              && Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude));
+            const coordinates = hasCoordinates
+              ? `위도 ${Number(item.latitude).toFixed(6)} · 경도 ${Number(item.longitude).toFixed(6)}`
               : "좌표 정보 없음";
-            return `<div class="receipt-item"><strong>${item.speciesType} · ${item.location}</strong><span>${item.approved ? "지도 반영 완료" : "검수 대기"}</span><br>접수번호 ${item.id}<br>${new Date(item.discoveredAt).toLocaleString("ko-KR")}<br>${item.content || "추가 내용 없음"}<br>${coordinates}</div>`;
+            const reviewStatus = item.reviewStatus || (item.approved ? "approved" : "pending");
+            const statusText = reviewStatus === "approved" ? "승인 완료 · 지도 반영"
+              : reviewStatus === "rejected" ? "반려됨" : "검수 대기";
+            const imageUrl = item.imagePath ? `${apiBase()}/${String(item.imagePath).replace(/^\/+/, "")}` : "";
+            return `<article class="receipt-item">
+              <div class="receipt-grid">
+                ${imageUrl ? `<a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener"><img class="receipt-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.speciesType || "제보")} 제보 사진"></a>` : ""}
+                <div>
+                  <strong>${escapeHtml(item.speciesType || "종류 미상")} · ${escapeHtml(item.location || "위치 설명 없음")}</strong>
+                  <span>${statusText}</span><br>
+                  접수번호 ${escapeHtml(item.id || "")}<br>
+                  ${new Date(item.discoveredAt).toLocaleString("ko-KR")}<br>
+                  ${escapeHtml(item.content || "추가 내용 없음")}<br>
+                  <span class="receipt-coordinate">${coordinates}</span>
+                </div>
+              </div>
+              <div class="review-actions">
+                <button class="review-approve" type="button" data-review="approve" data-report-id="${escapeHtml(item.id || "")}" ${!hasCoordinates || reviewStatus === "approved" ? "disabled" : ""}>${reviewStatus === "approved" ? "승인 완료" : "승인하고 지도에 표시"}</button>
+                <button class="review-reject" type="button" data-review="reject" data-report-id="${escapeHtml(item.id || "")}" ${reviewStatus === "rejected" ? "disabled" : ""}>${reviewStatus === "rejected" ? "반려 완료" : "반려"}</button>
+              </div>
+            </article>`;
           }).join("")
           : `<div class="receipt-item"><strong>접수된 제보가 없습니다</strong>새 제보가 들어오면 이곳에 표시됩니다.</div>`;
         host.hidden = false;
         status.textContent = `관리자 인증 완료 · 총 ${body.length}건`;
       } catch (error) {
-        status.textContent = error?.message || "제보 내역을 불러오지 못했습니다.";
+        status.textContent = error instanceof TypeError ? apiConnectionMessage() : (error?.message || "제보 내역을 불러오지 못했습니다.");
       } finally {
         $("#adminLoginButton").disabled = false;
       }
@@ -1180,6 +1235,30 @@
     $("#adminLoginButton").addEventListener("click", loadAdminReports);
     $("#adminPassword").addEventListener("keydown", (event) => {
       if (event.key === "Enter") loadAdminReports();
+    });
+    $("#adminReports").addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-review]");
+      if (!button) return;
+      const decision = button.dataset.review;
+      const reportId = button.dataset.reportId;
+      const status = $("#adminStatus");
+      const password = $("#adminPassword").value;
+      button.disabled = true;
+      status.textContent = decision === "approve" ? "제보를 승인하는 중…" : "제보를 반려하는 중…";
+      try {
+        const response = await fetch(`${apiBase()}/reports/${encodeURIComponent(reportId)}/review/${decision}`, {
+          method: "POST",
+          headers: { "X-Admin-Password": password }
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body.detail || "검수 결과를 저장하지 못했습니다.");
+        status.textContent = body.message;
+        await loadAdminReports();
+        await loadApprovedSightings();
+      } catch (error) {
+        status.textContent = error instanceof TypeError ? apiConnectionMessage() : (error?.message || "검수 처리 중 오류가 발생했습니다.");
+        button.disabled = false;
+      }
     });
 
     $("#reportForm").addEventListener("submit", async (event) => {
@@ -1211,7 +1290,7 @@
         $("#adminStatus").textContent = "새 제보가 접수되었습니다. 관리자는 비밀번호를 다시 입력해 확인하세요.";
         loadApprovedSightings();
       } catch (error) {
-        status.textContent = error?.message || "제보 중 오류가 발생했습니다.";
+        status.textContent = error instanceof TypeError ? apiConnectionMessage() : (error?.message || "제보 중 오류가 발생했습니다.");
       } finally {
         button.disabled = false;
       }
