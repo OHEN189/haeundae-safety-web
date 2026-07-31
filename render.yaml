@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: haeundae-marine-safety-api-ohen189
+    runtime: python
+    plan: free
+    rootDir: server
+    buildCommand: python build_model.py && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://ohen189.github.io
