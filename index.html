@@ -668,7 +668,7 @@
         </div>
         <details class="settings">
           <summary>API 서버 설정 (지도·분석·제보 공통)</summary>
-          <input id="apiUrl" aria-label="분석 서버 주소" value="https://haeundae-marine-safety-api-ohen189.onrender.com">
+          <input id="apiUrl" aria-label="분석 서버 주소" value="http://127.0.0.1:8000">
         </details>
       </section>
 
@@ -855,6 +855,8 @@
 
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => [...document.querySelectorAll(selector)];
+    const PUBLIC_API_URL = "https://haeundae-marine-safety-api-ohen189.onrender.com";
+    if (location.hostname === "ohen189.github.io") $("#apiUrl").value = PUBLIC_API_URL;
     const apiBase = () => $("#apiUrl").value.trim().replace(/\/+$/, "");
     const apiConnectionMessage = () => location.protocol === "https:"
       ? "무료 공개 서버가 아직 연결되지 않았거나 잠시 깨어나는 중입니다. 1분 뒤 다시 시도해 주세요."
